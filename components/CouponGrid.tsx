@@ -35,7 +35,9 @@ export function CouponGrid({
   useEffect(() => {
     let alive = true;
     setCoupons(null);
-    getCoupons(merchantSlug ? { merchant: merchantSlug } : {}).then((all) => {
+    // Directory mode: real usable codes (verified + not-yet-verified), each with
+    // its true status so cards badge honestly. "Verified only" toggle filters below.
+    getCoupons({ listing: true, limit: 200, ...(merchantSlug ? { merchant: merchantSlug } : {}) }).then((all) => {
       if (!alive) return;
       const scoped = categorySlug
         ? all.filter((c) => categoryOf(c.merchant_slug) === categorySlug)
@@ -89,14 +91,14 @@ export function CouponGrid({
         <div className="surface border border-token rounded-xl p-10 text-center">
           <SearchX className="w-8 h-8 mx-auto text-subtle" />
           <p className="mt-3 font-display font-semibold" style={{ color: "var(--text)" }}>No codes here right now</p>
-          <p className="text-sm text-muted mt-1">We only show codes verified working — check back soon.</p>
+          <p className="text-sm text-muted mt-1">Check back soon — our sources refresh hourly.</p>
         </div>
       ) : highlightBest && sort === "verified" ? (
         <>
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "var(--verified-bg)", color: "var(--verified-text)" }}>
-                ★ Best verified deal
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "var(--verified-bg)", color: "var(--brand-blue)" }}>
+                ★ Top code
               </span>
             </div>
             <div className="lg:max-w-md">

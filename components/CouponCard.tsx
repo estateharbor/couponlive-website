@@ -100,10 +100,13 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
         <p className="text-sm text-muted mt-2 line-clamp-2">{coupon.description}</p>
       )}
 
-      {/* Confidence */}
-      <div className="mt-3">
-        <ConfidenceMeter score={coupon.confidence_score} />
-      </div>
+      {/* Confidence — only meaningful once a code has been verified or has
+          feedback; hide it for untested codes so we don't imply a "% worked". */}
+      {(coupon.status === "valid" || coupon.confidence_score > 0) && (
+        <div className="mt-3">
+          <ConfidenceMeter score={coupon.confidence_score} />
+        </div>
+      )}
 
       {/* Expiry */}
       {expiry && (

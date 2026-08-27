@@ -7,26 +7,32 @@ import { MOCK_COUPONS, MOCK_MERCHANTS } from "./mock";
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
 export const USING_MOCK = API === "";
 
-async function get<T>(path: string, fallback: T): Promise<T> {
-  if (USING_MOCK) return fallback;
+async function get<T>(path: string, mock: T): Promise<T> {
+  // No API configured (local dev) -> serve the typed mock layer.
+  if (USING_MOCK) return mock;
   try {
     const res = await fetch(`${API}${path}`, { headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error(`${res.status}`);
     return (await res.json()) as T;
   } catch {
-    return fallback; // graceful: never blank the UI on a transient API error
+    // Production: NEVER fall back to fake "verified" mock data — that would show
+    // untested codes as if they were real. Return empty; the UI shows an honest
+    // empty state instead.
+    return ([] as unknown) as T;
   }
 }
 
 export async function getCoupons(params: {
   merchant?: string;
   status?: string;
+  listing?: boolean;
   include_stale?: boolean;
   limit?: number;
 } = {}): Promise<Coupon[]> {
   const q = new URLSearchParams();
   if (params.merchant) q.set("merchant", params.merchant);
   if (params.status) q.set("status", params.status);
+  if (params.listing) q.set("listing", "true");
   if (params.include_stale) q.set("include_stale", "true");
   if (params.limit) q.set("limit", String(params.limit));
   const fallback = MOCK_COUPONS.filter(
