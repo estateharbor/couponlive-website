@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { CouponGrid } from "@/components/CouponGrid";
 import { FeaturedCode } from "@/components/FeaturedCode";
 import { TrendingStores } from "@/components/TrendingStores";
+import { AmazonDeals } from "@/components/AmazonDeals";
 
 export default function HomePage() {
   return (
@@ -74,6 +75,9 @@ export default function HomePage() {
             <TrendingStores />
           </div>
         </section>
+
+        {/* AMAZON DEALS (real, via Cuelinks) — hides itself when empty */}
+        <AmazonDeals limit={6} />
 
         {/* LATEST CODES (real directory) */}
         <section className="mx-auto max-w-6xl px-4 pt-12 pb-4">

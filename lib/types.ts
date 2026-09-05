@@ -30,6 +30,19 @@ export interface Coupon {
   expires_at?: string | null; // optional; shown only if known
 }
 
+// A code-less offer (e.g. an Amazon deal via Cuelinks). No code to copy and
+// never "Verified" — the CTA is the affiliate `url`. Mirrors backend DealOut.
+export interface Deal {
+  id: number;
+  merchant_id: number;
+  merchant_name: string | null;
+  description: string | null;
+  discount_type: DiscountType;
+  discount_value: number | null;
+  url: string | null;
+  last_seen: string;
+}
+
 export interface Merchant {
   id: number;
   name: string;

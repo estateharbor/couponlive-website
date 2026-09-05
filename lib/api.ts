@@ -1,4 +1,4 @@
-import type { Coupon, Merchant } from "./types";
+import type { Coupon, Deal, Merchant } from "./types";
 import { MOCK_COUPONS, MOCK_MERCHANTS } from "./mock";
 
 // Swap mock -> live with one env var. When NEXT_PUBLIC_API_URL is set the site
@@ -43,6 +43,15 @@ export async function getCoupons(params: {
 
 export async function getMerchants(): Promise<Merchant[]> {
   return get<Merchant[]>("/merchants", MOCK_MERCHANTS);
+}
+
+// Code-less offers (e.g. Amazon deals via Cuelinks). No mock layer — deals are
+// real-data-only; with no API configured this returns [] and the section hides.
+export async function getDeals(params: { merchant?: string; limit?: number } = {}): Promise<Deal[]> {
+  const q = new URLSearchParams();
+  if (params.merchant) q.set("merchant", params.merchant);
+  if (params.limit) q.set("limit", String(params.limit));
+  return get<Deal[]>(`/deals?${q.toString()}`, []);
 }
 
 export interface FeedbackResult {
