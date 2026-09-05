@@ -22,9 +22,9 @@ export function SiteFooter() {
       <div className="border-t border-token">
         <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-subtle">
           <p className="max-w-3xl">
-            Some links on CouponLive are affiliate links (including Amazon) — if you buy
-            through them we may earn a commission, at no extra cost to you. This never
-            affects whether a code shows as ✓ Verified.
+            Some links on CouponLive are affiliate links — if you buy through them we may
+            earn a commission, at no extra cost to you. This never affects whether a code
+            shows as ✓ Verified.
           </p>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 justify-between">
             <span>© {new Date().getFullYear()} CouponLive · couponlive.in</span>
