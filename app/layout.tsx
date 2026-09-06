@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   applicationName: "CouponLive",
   alternates: { canonical: "/" },
   manifest: "/site.webmanifest",
+  // Site-ownership verification for the Admitad (Mitgo) affiliate network.
+  other: {
+    "mitgo-verification": "bac5e7ee-c74c-4583-980f-5413e0de681f",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
