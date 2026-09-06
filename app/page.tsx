@@ -5,10 +5,27 @@ import { CouponGrid } from "@/components/CouponGrid";
 import { FeaturedCode } from "@/components/FeaturedCode";
 import { TrendingStores } from "@/components/TrendingStores";
 import { TopDeals } from "@/components/TopDeals";
+import { JsonLd } from "@/components/JsonLd";
+import { getCoupons, getDeals, getMerchants } from "@/lib/api";
+import { organizationLd, websiteLd } from "@/lib/seo";
 
-export default function HomePage() {
+// Async server component: fetch the live content at BUILD time and pass it down,
+// so the real coupons/deals/stores are baked into the static HTML for search &
+// AI crawlers. The client components then refresh for live freshness.
+export default async function HomePage() {
+  const [latest, deals, merchants] = await Promise.all([
+    getCoupons({ listing: true, limit: 6 }),
+    getDeals({ limit: 6 }),
+    getMerchants(),
+  ]);
+  const featured = latest[0] ?? null;
+  const trending = [...merchants]
+    .sort((a, b) => (b.coupon_count ?? 0) - (a.coupon_count ?? 0))
+    .slice(0, 12);
+
   return (
     <>
+      <JsonLd data={[organizationLd(), websiteLd()]} />
       <SiteHeader />
       <main>
         {/* HERO */}
@@ -63,7 +80,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="absolute -inset-4 rounded-2xl opacity-60 blur-2xl" style={{ background: "radial-gradient(closest-side, rgba(10,95,243,.16), transparent)" }} aria-hidden />
             <div className="relative">
-              <FeaturedCode />
+              <FeaturedCode initial={featured} />
             </div>
           </div>
         </section>
@@ -72,12 +89,12 @@ export default function HomePage() {
         <section className="mx-auto max-w-6xl px-4 pt-12">
           <h2 className="font-display font-bold text-2xl" style={{ color: "var(--text)" }}>Trending stores</h2>
           <div className="mt-4">
-            <TrendingStores />
+            <TrendingStores initialMerchants={trending} />
           </div>
         </section>
 
         {/* TOP DEALS (real, via Cuelinks) — hides itself when empty */}
-        <TopDeals limit={6} />
+        <TopDeals limit={6} initialDeals={deals} />
 
         {/* LATEST CODES (real directory) */}
         <section className="mx-auto max-w-6xl px-4 pt-12 pb-4">
@@ -87,7 +104,7 @@ export default function HomePage() {
           </div>
           <p className="text-sm text-muted mt-1">Newest codes from our sources. A green ✓ badge means we checkout-tested it.</p>
           <div className="mt-4">
-            <CouponGrid showControls={false} limit={6} />
+            <CouponGrid showControls={false} limit={6} initialCoupons={latest} />
           </div>
         </section>
       </main>

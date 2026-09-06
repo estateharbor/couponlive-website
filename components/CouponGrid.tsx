@@ -19,6 +19,7 @@ export function CouponGrid({
   verifiedOnlyDefault = false,
   highlightBest = false,
   limit,
+  initialCoupons,
 }: {
   merchantSlug?: string;
   categorySlug?: string;
@@ -27,16 +28,18 @@ export function CouponGrid({
   verifiedOnlyDefault?: boolean;
   highlightBest?: boolean;
   limit?: number;
+  // Fetched at build so the coupons are in the static HTML (SEO). The client
+  // still refreshes them below for live freshness.
+  initialCoupons?: Coupon[];
 }) {
-  const [coupons, setCoupons] = useState<Coupon[] | null>(null);
+  const [coupons, setCoupons] = useState<Coupon[] | null>(initialCoupons ?? null);
   const [sort, setSort] = useState<SortMode>(initialSort);
   const [verifiedOnly, setVerifiedOnly] = useState(verifiedOnlyDefault);
 
   useEffect(() => {
     let alive = true;
-    setCoupons(null);
-    // Directory mode: real usable codes (verified + not-yet-verified), each with
-    // its true status so cards badge honestly. "Verified only" toggle filters below.
+    // Don't blank pre-rendered content — refetch and replace so the SEO HTML
+    // stays put and there's no skeleton flash over baked-in coupons.
     getCoupons({ listing: true, limit: 200, ...(merchantSlug ? { merchant: merchantSlug } : {}) }).then((all) => {
       if (!alive) return;
       const scoped = categorySlug

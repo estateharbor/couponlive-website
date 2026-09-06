@@ -5,8 +5,10 @@ import { ExternalLink, Ticket } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { CouponGrid } from "@/components/CouponGrid";
 import { MerchantTile } from "@/components/MerchantTile";
-import { getMerchants } from "@/lib/api";
+import { JsonLd } from "@/components/JsonLd";
+import { getCoupons, getMerchants } from "@/lib/api";
 import { allStoreSlugs, getStoreBySlug } from "@/lib/catalog";
+import { SITE, breadcrumbLd, couponsItemListLd, faqLd, storeFaq } from "@/lib/seo";
 
 // Static export: enumerate stores at build. Pull the live merchant list from the
 // API and union it with the mock slugs, so real stores get pre-rendered pages.
@@ -52,8 +54,32 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   const store = await resolveStore(slug);
   if (!store) notFound();
 
+  // Fetch this store's coupons at BUILD time so they're in the static HTML
+  // (crawlable by search + AI). The grid still refreshes them client-side.
+  let coupons: Awaited<ReturnType<typeof getCoupons>> = [];
+  try {
+    coupons = await getCoupons({ listing: true, merchant: slug, limit: 100 });
+  } catch {
+    /* API unreachable at build — page still ships, grid loads client-side */
+  }
+
+  const storeUrl = `${SITE}/store/${slug}/`;
+  const faqs = storeFaq(store.name);
+  const verifiedCount = coupons.filter((c) => c.status === "valid").length;
+
   return (
     <PageShell>
+      <JsonLd
+        data={[
+          breadcrumbLd([
+            { name: "Home", url: `${SITE}/` },
+            { name: "Stores", url: `${SITE}/stores/` },
+            { name: `${store.name} coupons`, url: storeUrl },
+          ]),
+          couponsItemListLd(store.name, storeUrl, coupons),
+          faqLd(faqs),
+        ]}
+      />
       <section className="border-b border-token">
         <div className="mx-auto max-w-6xl px-4 py-8 flex items-center gap-4">
           <MerchantTile name={store.name} size={64} />
@@ -63,7 +89,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
               <Link href="/stores/" className="hover:underline">Stores</Link>
             </nav>
             <h1 className="font-display font-bold text-3xl" style={{ color: "var(--text)" }}>
-              {store.name} coupons
+              {store.name} coupons &amp; promo codes
             </h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm">
               <span className="inline-flex items-center gap-1.5 font-semibold text-muted">
@@ -79,8 +105,34 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         </div>
       </section>
 
+      {/* Intro copy — real text for search + AI engines to read and summarise. */}
+      <section className="mx-auto max-w-6xl px-4 pt-6">
+        <p className="text-muted max-w-3xl leading-relaxed">
+          Find the latest <strong>{store.name} coupon codes and offers</strong>, refreshed hourly from our
+          sources. We currently list <strong>{store.count}</strong> {store.name} {store.count === 1 ? "code" : "codes"}
+          {verifiedCount > 0 && <> — <strong>{verifiedCount}</strong> checkout-tested and marked ✓&nbsp;Verified</>}.
+          Tap “Reveal code” to copy a code, then paste it in the promo box at {store.name} checkout. Codes we
+          haven’t tested yet are labelled “Not verified yet”, so you always know exactly what you’re trying.
+        </p>
+      </section>
+
       <section className="mx-auto max-w-6xl px-4 py-8">
-        <CouponGrid merchantSlug={slug} highlightBest />
+        <CouponGrid merchantSlug={slug} highlightBest initialCoupons={coupons} />
+      </section>
+
+      {/* FAQ — visible text + FAQPage structured data above. */}
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <h2 className="font-display font-bold text-xl mb-4" style={{ color: "var(--text)" }}>
+          {store.name} coupons — FAQ
+        </h2>
+        <div className="space-y-4 max-w-3xl">
+          {faqs.map((f) => (
+            <details key={f.q} className="surface border border-token rounded-lg p-4">
+              <summary className="font-semibold cursor-pointer" style={{ color: "var(--text)" }}>{f.q}</summary>
+              <p className="text-sm text-muted mt-2 leading-relaxed">{f.a}</p>
+            </details>
+          ))}
+        </div>
       </section>
     </PageShell>
   );

@@ -12,8 +12,10 @@ import { MerchantTile } from "./MerchantTile";
 // has no code to copy and is never "Verified"; you just tap through to the store.
 // Renders nothing until real deals exist, so the homepage never shows an empty
 // shell.
-export function TopDeals({ limit = 6 }: { limit?: number }) {
-  const [deals, setDeals] = useState<Deal[] | null>(null);
+export function TopDeals({ limit = 6, initialDeals }: { limit?: number; initialDeals?: Deal[] }) {
+  // `initialDeals` is fetched at build so deals ship in the static HTML (SEO);
+  // the client refreshes them for freshness.
+  const [deals, setDeals] = useState<Deal[] | null>(initialDeals ?? null);
 
   useEffect(() => {
     let alive = true;

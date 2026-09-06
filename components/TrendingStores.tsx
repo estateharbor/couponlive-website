@@ -8,8 +8,12 @@ import { MerchantTile } from "./MerchantTile";
 
 // Real stores from the API, most codes first. Counts are honest ("N codes"),
 // not a "live/verified" claim.
-export function TrendingStores() {
-  const [merchants, setMerchants] = useState<Merchant[] | null>(null);
+export function TrendingStores({ initialMerchants }: { initialMerchants?: Merchant[] }) {
+  // `initialMerchants` is fetched at build so store links ship in the static
+  // HTML (SEO + internal linking); the client refreshes for freshness.
+  const [merchants, setMerchants] = useState<Merchant[] | null>(
+    initialMerchants && initialMerchants.length ? initialMerchants : null,
+  );
 
   useEffect(() => {
     let alive = true;
