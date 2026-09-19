@@ -1,4 +1,4 @@
-import type { Coupon, Deal, Merchant } from "./types";
+import type { Coupon, Deal, Merchant, TrialCard, TrialCategoryCount, Tool } from "./types";
 import { MOCK_COUPONS, MOCK_MERCHANTS } from "./mock";
 
 // Swap mock -> live with one env var. When NEXT_PUBLIC_API_URL is set the site
@@ -52,6 +52,46 @@ export async function getDeals(params: { merchant?: string; limit?: number } = {
   if (params.merchant) q.set("merchant", params.merchant);
   if (params.limit) q.set("limit", String(params.limit));
   return get<Deal[]>(`/deals?${q.toString()}`, []);
+}
+
+// --- Free Trials vertical (real-data-only; no mock layer) ---
+export async function getTrials(params: {
+  q?: string;
+  category?: string;
+  offer_type?: string;
+  no_card?: boolean;
+  min_days?: number;
+  india?: boolean;
+  ai?: boolean;
+  sort?: string;
+  limit?: number;
+} = {}): Promise<TrialCard[]> {
+  const p = new URLSearchParams();
+  if (params.q) p.set("q", params.q);
+  if (params.category) p.set("category", params.category);
+  if (params.offer_type) p.set("offer_type", params.offer_type);
+  if (params.no_card) p.set("no_card", "true");
+  if (params.min_days) p.set("min_days", String(params.min_days));
+  if (params.india) p.set("india", "true");
+  if (params.ai) p.set("ai", "true");
+  if (params.sort) p.set("sort", params.sort);
+  if (params.limit) p.set("limit", String(params.limit));
+  return get<TrialCard[]>(`/trials?${p.toString()}`, []);
+}
+
+export async function getTrialCategories(): Promise<TrialCategoryCount[]> {
+  return get<TrialCategoryCount[]>("/trial-categories", []);
+}
+
+export async function getTool(slug: string): Promise<Tool | null> {
+  if (USING_MOCK) return null;
+  try {
+    const res = await fetch(`${API}/tools/${slug}`, { headers: { Accept: "application/json" } });
+    if (!res.ok) return null;
+    return (await res.json()) as Tool;
+  } catch {
+    return null;
+  }
 }
 
 export interface FeedbackResult {

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getMerchants } from "@/lib/api";
+import { getMerchants, getTrials } from "@/lib/api";
 import { allCategorySlugs, allStoreSlugs } from "@/lib/catalog";
 import { SITE } from "@/lib/seo";
 
@@ -16,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/stores/`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE}/categories/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE}/deals/`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    { url: `${SITE}/free-trials/`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/how-it-works/`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE}/search/`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
   ];
@@ -40,5 +41,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...storePages, ...categoryPages];
+  // Tool pages for the Free Trials vertical (slugs from the live trials feed).
+  const toolPages: MetadataRoute.Sitemap = [];
+  try {
+    const trials = await getTrials({ limit: 200 });
+    for (const slug of new Set(trials.map((t) => t.tool_slug))) {
+      toolPages.push({
+        url: `${SITE}/tool/${slug}/`,
+        lastModified: now,
+        changeFrequency: "daily",
+        priority: 0.7,
+      });
+    }
+  } catch {
+    /* API unreachable at build — the rest of the sitemap still ships */
+  }
+
+  return [...staticPages, ...storePages, ...categoryPages, ...toolPages];
 }

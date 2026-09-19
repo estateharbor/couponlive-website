@@ -1,7 +1,7 @@
 // Structured-data (JSON-LD schema.org) builders. Emitted server-side so both
 // Google and AI answer engines (which don't run JavaScript) can read the site's
 // content and coupons directly from the HTML.
-import type { Coupon } from "./types";
+import type { Coupon, TrialCard, Tool } from "./types";
 import { discountHeadline } from "./format";
 
 export const SITE = "https://couponlive.in";
@@ -87,6 +87,78 @@ export function faqLd(qa: { q: string; a: string }[]) {
       acceptedAnswer: { "@type": "Answer", text: x.a },
     })),
   };
+}
+
+// --- Free Trials structured data ---
+
+// ItemList of trial offers (the /free-trials directory), machine-readable.
+export function trialsItemListLd(trials: TrialCard[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Free trials for premium tools (India)",
+    numberOfItems: trials.length,
+    itemListElement: trials.map((t, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "SoftwareApplication",
+        name: t.tool_name,
+        applicationCategory: t.category || "BusinessApplication",
+        url: `${SITE}/tool/${t.tool_slug}/`,
+        offers: {
+          "@type": "Offer",
+          name: t.title,
+          category: t.offer_type,
+          ...(t.renew_price_inr != null
+            ? { price: t.renew_price_inr, priceCurrency: "INR" }
+            : t.renew_price_usd != null
+              ? { price: t.renew_price_usd, priceCurrency: "USD" }
+              : {}),
+        },
+      },
+    })),
+  };
+}
+
+// SoftwareApplication node for a single tool page, with its trial offers.
+export function softwareAppLd(tool: Tool) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: tool.name,
+    url: `${SITE}/tool/${tool.slug}/`,
+    applicationCategory: tool.category || "BusinessApplication",
+    ...(tool.description ? { description: tool.description } : {}),
+    ...(tool.website_url ? { sameAs: [tool.website_url] } : {}),
+    offers: tool.offers.map((o) => ({
+      "@type": "Offer",
+      name: o.title,
+      category: o.offer_type,
+      ...(o.renew_price_inr != null
+        ? { price: o.renew_price_inr, priceCurrency: "INR" }
+        : o.renew_price_usd != null
+          ? { price: o.renew_price_usd, priceCurrency: "USD" }
+          : { price: 0, priceCurrency: "INR" }),
+    })),
+  };
+}
+
+export function trialFaq(toolName: string): { q: string; a: string }[] {
+  return [
+    {
+      q: `Does ${toolName} have a free trial in India?`,
+      a: `We list ${toolName}'s current free-trial and free-plan options for India, including whether a card is required, the trial length, and the price after it ends. Facts we can't confirm are shown as "Unknown" rather than guessed.`,
+    },
+    {
+      q: `Does the ${toolName} trial need a credit card?`,
+      a: `Each offer card shows a "No card needed" or "Card / UPI needed" chip. When we haven't confirmed it, it shows "Card: unknown" — we never assume.`,
+    },
+    {
+      q: `Will I be charged after the ${toolName} trial?`,
+      a: `Where known, we show the exact renewal price in ₹ so there are no surprises. Always cancel before the trial ends if you don't want to be charged.`,
+    },
+  ];
 }
 
 // Reusable FAQ copy for store pages (rendered visibly AND as FAQPage JSON-LD).
