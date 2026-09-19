@@ -58,18 +58,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             React script, so React 19 doesn't drop it). */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/theme-init.js" />
+        {/* Preconnect to the font hosts so the async load below is fast. */}
         <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="" />
         <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=general-sans@600,700&f[]=satoshi@400,500,700&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap"
-        />
+        {/* Fonts loaded NON-render-blocking (deferred injection) — text paints
+            instantly in the system fallback, then swaps. Big mobile-LCP win. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/fonts-init.js" defer />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://api.fontshare.com/v2/css?f[]=general-sans@600,700&f[]=satoshi@400,500,700&display=swap"
+          />
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap"
+          />
+        </noscript>
       </head>
       <body>{children}</body>
     </html>
