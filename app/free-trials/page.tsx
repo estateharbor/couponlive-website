@@ -48,13 +48,13 @@ export default async function FreeTrialsPage() {
           💳 No-card trials · 🇮🇳 India-first
         </span>
         <h1 className="font-display font-bold tracking-tight mt-4 text-4xl sm:text-5xl leading-[1.05]" style={{ color: "var(--text)" }}>
-          Free trials that <span style={{ color: "var(--verified)" }}>actually work.</span>
+          Free plans, trials &amp; credits that <span style={{ color: "var(--verified)" }}>actually work.</span>
         </h1>
         <p className="text-base sm:text-lg text-muted mt-4 max-w-2xl">
-          Every premium tool&apos;s free trial — for India. We show whether a{" "}
-          <strong>card is required</strong>, the <strong>trial length</strong>, and the exact{" "}
-          <strong>₹ price after it ends</strong>. Facts we can&apos;t confirm say &ldquo;Unknown&rdquo; —
-          never guessed.
+          Premium tools&apos; free trials, free plans, credits and student offers — for India, one card
+          per tool. We show whether a <strong>card is required</strong>, the <strong>trial length</strong>,
+          and the exact <strong>₹ price after it ends</strong>. Facts we can&apos;t confirm say
+          &ldquo;Unknown&rdquo; — never guessed, and conditional offers say &ldquo;Check eligibility.&rdquo;
         </p>
       </section>
 

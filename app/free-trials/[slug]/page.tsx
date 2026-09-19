@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { getTrials, getTrialCategories } from "@/lib/api";
 import type { TrialCard as TrialCardT } from "@/lib/types";
 import { SITE, breadcrumbLd, faqLd, trialFaq, trialsItemListLd } from "@/lib/seo";
+import { groupByTool } from "@/lib/trials";
 
 export const dynamicParams = false;
 
@@ -133,8 +134,8 @@ export default async function TrialHubPage({ params }: { params: Promise<{ slug:
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {r.trials.map((t) => (
-              <TrialCard key={t.id} trial={t} />
+            {groupByTool(r.trials).map((g) => (
+              <TrialCard key={g.primary.tool_slug} trial={g.primary} alsoTypes={g.alsoTypes} />
             ))}
           </div>
         )}

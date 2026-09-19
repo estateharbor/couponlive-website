@@ -3,22 +3,9 @@
 import Link from "next/link";
 import { ArrowUpRight, CreditCard, ShieldCheck, HelpCircle, CheckCircle2 } from "lucide-react";
 import type { TrialCard as TrialCardT } from "@/lib/types";
+import { ctaLabel, offerTypeLabel } from "@/lib/trials";
 import { MerchantTile } from "./MerchantTile";
 import { RemindModal } from "./RemindModal";
-
-const TYPE_LABEL: Record<string, string> = {
-  no_card_trial: "No card",
-  card_trial: "Card needed",
-  freemium_premium_trial: "Freemium",
-  extended_trial: "Extended trial",
-  startup_credit: "Startup credit",
-  student_offer: "Student",
-  telecom_bundle: "Telecom bundle",
-  bank_card_offer: "Bank offer",
-  ai_credits: "AI credits",
-  lifetime_free_tier: "Free forever",
-  unknown: "Free trial",
-};
 
 function trialHeadline(c: TrialCardT): string {
   if (c.trial_days) return `${c.trial_days}-day free trial`;
@@ -46,8 +33,9 @@ function timeAgo(iso: string | null): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export function TrialCard({ trial: c }: { trial: TrialCardT }) {
+export function TrialCard({ trial: c, alsoTypes = [] }: { trial: TrialCardT; alsoTypes?: string[] }) {
   const renew = renewLabel(c);
+  const cta = ctaLabel(c);
   // Only offer a cancel-reminder where the trial can actually auto-charge.
   const canAutoCharge =
     c.card_required !== false && (!!c.trial_days || c.renew_price_inr != null || c.renew_price_usd != null);
@@ -71,7 +59,7 @@ export function TrialCard({ trial: c }: { trial: TrialCardT }) {
             </Link>
             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold shrink-0"
               style={{ background: "var(--surface-2, rgba(0,0,0,.05))", color: "var(--text-muted)" }}>
-              {TYPE_LABEL[c.offer_type] ?? "Free trial"}
+              {offerTypeLabel(c.offer_type)}
             </span>
           </div>
           <p className="font-display font-bold text-xl leading-tight mt-0.5" style={{ color: "var(--text)" }}>
@@ -81,6 +69,11 @@ export function TrialCard({ trial: c }: { trial: TrialCardT }) {
       </div>
 
       <p className="text-sm text-muted mt-2 line-clamp-2">{c.title}</p>
+
+      {/* Other offer types this tool has (grouped one-card-per-tool). */}
+      {alsoTypes.length > 0 && (
+        <p className="text-xs text-subtle mt-1.5">Also: {alsoTypes.join(" · ")}</p>
+      )}
 
       {/* Honest fact row */}
       <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-semibold">
@@ -127,9 +120,9 @@ export function TrialCard({ trial: c }: { trial: TrialCardT }) {
           rel="nofollow sponsored noopener noreferrer"
           className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 px-4 font-semibold text-white text-[15px] transition-colors"
           style={{ background: "var(--brand-blue)" }}
-          aria-label={`Claim the ${c.tool_name} free trial`}
+          aria-label={`${cta} — ${c.tool_name}`}
         >
-          Claim trial
+          {cta}
           <ArrowUpRight className="w-4 h-4 opacity-80" strokeWidth={2.5} />
         </a>
         {canAutoCharge && (

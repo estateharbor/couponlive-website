@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SearchX } from "lucide-react";
 import type { TrialCard as TrialCardT, TrialCategoryCount } from "@/lib/types";
 import { getTrials } from "@/lib/api";
+import { groupByTool } from "@/lib/trials";
 import { TrialCard } from "./TrialCard";
 import { CouponGridSkeleton } from "./CouponCardSkeleton";
 
@@ -49,7 +50,8 @@ export function TrialGrid({
     };
   }, [noCard, ai, category, minDays, sort]);
 
-  const visible = useMemo(() => trials ?? [], [trials]);
+  // One card per tool (collapse trial/free-plan/credits into a single card).
+  const groups = useMemo(() => groupByTool(trials ?? []), [trials]);
 
   return (
     <div>
@@ -119,7 +121,7 @@ export function TrialGrid({
 
       {trials === null ? (
         <CouponGridSkeleton count={9} />
-      ) : visible.length === 0 ? (
+      ) : groups.length === 0 ? (
         <div className="surface border border-token rounded-xl p-10 text-center">
           <SearchX className="w-8 h-8 mx-auto text-subtle" />
           <p className="mt-3 font-display font-semibold" style={{ color: "var(--text)" }}>No trials match these filters</p>
@@ -127,8 +129,8 @@ export function TrialGrid({
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((t) => (
-            <TrialCard key={t.id} trial={t} />
+          {groups.map((g) => (
+            <TrialCard key={g.primary.tool_slug} trial={g.primary} alsoTypes={g.alsoTypes} />
           ))}
         </div>
       )}
