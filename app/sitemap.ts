@@ -18,6 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/deals/`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE}/free-trials/`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/how-it-works/`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${SITE}/about/`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${SITE}/editorial-policy/`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${SITE}/corrections/`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE}/affiliate-disclosure/`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE}/privacy/`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE}/terms/`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     // /search is intentionally excluded (noindex — internal search results).
   ];
 

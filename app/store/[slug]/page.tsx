@@ -6,6 +6,8 @@ import { PageShell } from "@/components/PageShell";
 import { CouponGrid } from "@/components/CouponGrid";
 import { MerchantTile } from "@/components/MerchantTile";
 import { JsonLd } from "@/components/JsonLd";
+import { Byline } from "@/components/Byline";
+import { VERIFY_TEAM, reviewedToday } from "@/lib/editorial";
 import { getCoupons, getMerchants } from "@/lib/api";
 import { allStoreSlugs, getStoreBySlug } from "@/lib/catalog";
 import { SITE, breadcrumbLd, couponsItemListLd, faqLd, storeFaq } from "@/lib/seo";
@@ -109,6 +111,9 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
                   Visit {store.name} <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
+            </div>
+            <div className="mt-2">
+              <Byline author={VERIFY_TEAM.name} role={VERIFY_TEAM.role} reviewed={reviewedToday()} team />
             </div>
           </div>
         </div>

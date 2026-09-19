@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, Search, MonitorCheck, ThumbsUp, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
+import { Byline } from "@/components/Byline";
+import { FOUNDER } from "@/lib/editorial";
 
 export const metadata: Metadata = {
   title: "How we verify coupon codes",
@@ -33,6 +35,7 @@ export default function HowItWorksPage() {
           with the time and method; the rest are the latest from our sources, clearly marked
           &ldquo;Not verified yet&rdquo; so you always know what you&apos;re trying.
         </p>
+        <div className="mt-4"><Byline author={FOUNDER.name} role={FOUNDER.role} /></div>
 
         <ol className="mt-10 space-y-6">
           {STEPS.map((s, i) => (

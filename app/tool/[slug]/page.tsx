@@ -5,6 +5,8 @@ import { PageShell } from "@/components/PageShell";
 import { TrialCard } from "@/components/TrialCard";
 import { MerchantTile } from "@/components/MerchantTile";
 import { JsonLd } from "@/components/JsonLd";
+import { Byline } from "@/components/Byline";
+import { VERIFY_TEAM, reviewedToday } from "@/lib/editorial";
 import { getTool, getTrials } from "@/lib/api";
 import type { TrialCard as TrialCardT, Tool } from "@/lib/types";
 import { SITE, breadcrumbLd, faqLd, softwareAppLd, trialFaq } from "@/lib/seo";
@@ -132,6 +134,9 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                   Visit {tool.name} <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
+            </div>
+            <div className="mt-2">
+              <Byline author={VERIFY_TEAM.name} role={VERIFY_TEAM.role} reviewed={reviewedToday()} team />
             </div>
           </div>
         </div>

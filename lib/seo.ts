@@ -16,6 +16,12 @@ export function organizationLd() {
     logo: `${SITE}/couponlive-logo-full.png`,
     description:
       "CouponLive lists working coupon codes and deals for India's top online stores, refreshed hourly. Codes we checkout-test carry a Verified badge.",
+    founder: { "@type": "Person", name: "Dhananjay Pandey", jobTitle: "Founder & Editorial Lead" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "support@couponlive.in",
+      contactType: "customer support",
+    },
     sameAs: [] as string[],
   };
 }

@@ -1,23 +1,28 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { Activity } from "lucide-react";
+import { FOUNDER } from "@/lib/editorial";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-token mt-20">
-      <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 sm:grid-cols-[1.5fr_1fr_1fr]">
+      <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 sm:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
           <Logo />
           <p className="text-sm text-muted mt-3 max-w-xs">
-            Real coupon codes for India&apos;s top stores, refreshed hourly. Codes we&apos;ve
-            checkout-tested carry a green ✓ Verified badge.
+            Real coupon codes, deals and free trials for India — checkout-tested offers clearly
+            separated from sourced ones. Proof-first, refreshed hourly.
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold mt-3" style={{ color: "var(--verified-text)" }}>
-            <Activity className="w-3.5 h-3.5" strokeWidth={2.75} /> Verified live, every hour
+            <Activity className="w-3.5 h-3.5" strokeWidth={2.75} /> Checkout-tested where possible
+          </p>
+          <p className="text-xs text-subtle mt-3">
+            Editorial lead: <Link href="/about/" className="font-semibold hover:underline" style={{ color: "var(--text)" }}>{FOUNDER.name}</Link>
           </p>
         </div>
-        <FooterCol title="Browse" links={[["Top stores", "/stores/"], ["Categories", "/categories/"], ["Deals feed", "/deals/"]]} />
-        <FooterCol title="CouponLive" links={[["How verification works", "/how-it-works/"], ["Search codes", "/search/"], ["Deals feed", "/deals/"]]} />
+        <FooterCol title="Browse" links={[["Top stores", "/stores/"], ["Categories", "/categories/"], ["Deals feed", "/deals/"], ["Free Trials", "/free-trials/"]]} />
+        <FooterCol title="Company" links={[["About", "/about/"], ["Editorial Policy", "/editorial-policy/"], ["How we verify", "/how-it-works/"], ["Report an error", "/corrections/"]]} />
+        <FooterCol title="Legal" links={[["Affiliate Disclosure", "/affiliate-disclosure/"], ["Privacy", "/privacy/"], ["Terms", "/terms/"]]} />
       </div>
       <div className="border-t border-token">
         <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-subtle">

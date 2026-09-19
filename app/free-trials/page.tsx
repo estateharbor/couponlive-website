@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/PageShell";
 import { TrialGrid } from "@/components/TrialGrid";
 import { JsonLd } from "@/components/JsonLd";
+import { Byline } from "@/components/Byline";
+import { VERIFY_TEAM, reviewedToday } from "@/lib/editorial";
 import { getTrials, getTrialCategories } from "@/lib/api";
 import { SITE, breadcrumbLd, faqLd, trialFaq, trialsItemListLd } from "@/lib/seo";
 
@@ -56,6 +58,7 @@ export default async function FreeTrialsPage() {
           and the exact <strong>₹ price after it ends</strong>. Facts we can&apos;t confirm say
           &ldquo;Unknown&rdquo; — never guessed, and conditional offers say &ldquo;Check eligibility.&rdquo;
         </p>
+        <div className="mt-4"><Byline author={VERIFY_TEAM.name} role={VERIFY_TEAM.role} reviewed={reviewedToday()} team /></div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-6">
