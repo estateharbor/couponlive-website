@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getMerchants, getTrials } from "@/lib/api";
+import { getMerchants, getTrials, getTrialCategories } from "@/lib/api";
 import { allCategorySlugs, allStoreSlugs } from "@/lib/catalog";
 import { SITE } from "@/lib/seo";
 
@@ -57,5 +57,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* API unreachable at build — the rest of the sitemap still ships */
   }
 
-  return [...staticPages, ...storePages, ...categoryPages, ...toolPages];
+  // Free-trial hub pages (long-tail): special hubs + one per trial category.
+  const hubSlugs = new Set<string>(["no-card", "ai", "student", "startup"]);
+  try {
+    for (const c of await getTrialCategories()) if (c.category) hubSlugs.add(c.category);
+  } catch {
+    /* API down at build — special hubs still ship */
+  }
+  const hubPages: MetadataRoute.Sitemap = [...hubSlugs].map((slug) => ({
+    url: `${SITE}/free-trials/${slug}/`,
+    lastModified: now,
+    changeFrequency: "daily",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...storePages, ...categoryPages, ...toolPages, ...hubPages];
 }
