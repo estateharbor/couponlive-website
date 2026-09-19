@@ -52,11 +52,14 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
     }
   }
 
+  // Affiliate deeplink (earns commission); fall back to the merchant homepage.
+  const shopUrl = coupon.url || (coupon.merchant_slug ? STORE_URLS[coupon.merchant_slug] : undefined);
+
   function handleReveal() {
     setRevealed(true);
     if (coupon.code) copy(coupon.code);
-    const url = coupon.merchant_slug ? STORE_URLS[coupon.merchant_slug] : undefined;
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    // NB: do NOT auto-open the merchant — Amazon Associates (and good UX) require
+    // an explicit user click. The "Shop at …" button below is that click.
   }
 
   async function handleVote(worked: boolean) {
@@ -141,45 +144,61 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
               initial={reduce ? false : { opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.16, ease: "easeOut" }}
-              className="flex items-stretch gap-2"
+              className="flex flex-col gap-2"
             >
-              {/* Ticket-style code box (cobalt = coupon identity) */}
-              <div
-                className="relative flex-1 flex items-center rounded-lg border-2 border-dashed px-3 py-2.5 overflow-hidden"
-                style={{ borderColor: "var(--brand-blue)", background: "var(--verified-bg)" }}
-              >
-                <span
-                  className="absolute left-0 top-0 bottom-0 w-1"
-                  style={{ background: "var(--brand-blue)" }}
-                  aria-hidden
-                />
-                <code className="font-code font-bold text-lg tracking-wide truncate" style={{ color: "var(--text)" }}>
-                  {coupon.code}
-                </code>
+              <div className="flex items-stretch gap-2">
+                {/* Ticket-style code box (cobalt = coupon identity) */}
+                <div
+                  className="relative flex-1 flex items-center rounded-lg border-2 border-dashed px-3 py-2.5 overflow-hidden"
+                  style={{ borderColor: "var(--brand-blue)", background: "var(--verified-bg)" }}
+                >
+                  <span
+                    className="absolute left-0 top-0 bottom-0 w-1"
+                    style={{ background: "var(--brand-blue)" }}
+                    aria-hidden
+                  />
+                  <code className="font-code font-bold text-lg tracking-wide truncate" style={{ color: "var(--text)" }}>
+                    {coupon.code}
+                  </code>
+                </div>
+                <button
+                  onClick={() => coupon.code && copy(coupon.code)}
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 font-semibold text-white text-sm"
+                  style={{ background: copied ? "var(--verified)" : "var(--brand-blue)" }}
+                  aria-label={copied ? "Code copied" : "Copy code"}
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {copied ? (
+                      <motion.span
+                        key="done"
+                        initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="inline-flex items-center gap-1.5"
+                      >
+                        <Check className="w-4 h-4" strokeWidth={3} /> Copied
+                      </motion.span>
+                    ) : (
+                      <motion.span key="copy" className="inline-flex items-center gap-1.5">
+                        <Copy className="w-4 h-4" strokeWidth={2.5} /> Copy
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
               </div>
-              <button
-                onClick={() => coupon.code && copy(coupon.code)}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 font-semibold text-white text-sm"
-                style={{ background: copied ? "var(--verified)" : "var(--brand-blue)" }}
-                aria-label={copied ? "Code copied" : "Copy code"}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  {copied ? (
-                    <motion.span
-                      key="done"
-                      initial={reduce ? false : { scale: 0.6, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="inline-flex items-center gap-1.5"
-                    >
-                      <Check className="w-4 h-4" strokeWidth={3} /> Copied
-                    </motion.span>
-                  ) : (
-                    <motion.span key="copy" className="inline-flex items-center gap-1.5">
-                      <Copy className="w-4 h-4" strokeWidth={2.5} /> Copy
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
+              {/* Explicit click-out on the affiliate link (earns commission; the
+                  code stays copied above). Never auto-opened — Amazon-compliant. */}
+              {shopUrl && (
+                <a
+                  href={shopUrl}
+                  target="_blank"
+                  rel="nofollow sponsored noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg py-2.5 font-semibold text-white text-sm"
+                  style={{ background: "var(--verified)" }}
+                >
+                  {copied ? "Copied ✓ " : ""}Shop at {coupon.merchant_name}
+                  <ArrowUpRight className="w-4 h-4 opacity-90" strokeWidth={2.5} />
+                </a>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

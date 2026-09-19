@@ -28,6 +28,7 @@ export interface Coupon {
   last_seen: string;
   last_validated_at: string | null;
   expires_at?: string | null; // optional; shown only if known
+  url?: string | null; // affiliate deeplink for the click-out (earns commission)
 }
 
 // A code-less offer (e.g. an Amazon deal via Cuelinks). No code to copy and

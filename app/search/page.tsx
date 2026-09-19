@@ -4,9 +4,12 @@ import { PageShell } from "@/components/PageShell";
 import { SearchClient } from "@/components/SearchClient";
 
 export const metadata: Metadata = {
-  title: "Search verified coupons",
-  description: "Search live-verified coupon codes and stores on CouponLive.",
+  title: "Search coupons & stores",
+  description: "Search coupon codes and stores on CouponLive.",
   alternates: { canonical: "/search/" },
+  // Internal search results add no unique indexable value — keep them out of the
+  // index (let merchant/category pages capture search demand instead).
+  robots: { index: false, follow: true },
 };
 
 export default function SearchPage() {

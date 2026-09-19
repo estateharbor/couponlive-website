@@ -4,15 +4,15 @@ import { Activity, Search, MonitorCheck, ThumbsUp, ShieldCheck } from "lucide-re
 import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
-  title: "How live verification works",
-  description: "How CouponLive tests every coupon code at a real checkout before showing it — so you never hit an expired code.",
+  title: "How we verify coupon codes",
+  description: "How CouponLive checkout-tests coupon codes and marks them ✓ Verified — and how we honestly label the ones we haven't tested yet.",
   alternates: { canonical: "/how-it-works/" },
 };
 
 const STEPS = [
-  { icon: Search, title: "We gather codes", text: "Codes are collected from stores and trusted coupon sources across India." },
-  { icon: MonitorCheck, title: "We test them live", text: "An automated browser adds an item to cart and applies each code at a real checkout — then reads whether a discount actually landed." },
-  { icon: Activity, title: "We re-check hourly", text: "Even a working code can die mid-day. Top stores get re-verified every few hours, so freshness is real, not a label." },
+  { icon: Search, title: "We gather codes", text: "Codes are collected from stores and trusted affiliate coupon sources across India." },
+  { icon: MonitorCheck, title: "We checkout-test them", text: "Where a store allows it, an automated browser adds an item to cart and applies the code at a real checkout — if a discount lands, the code earns a ✓ Verified badge." },
+  { icon: Activity, title: "We re-check regularly", text: "Even a working code can die mid-day. Verified codes are re-tested on a schedule; ones we can't test stay marked “Not verified yet.”" },
   { icon: ThumbsUp, title: "You confirm", text: "Your Worked / Didn't-work votes feed a confidence score — honestly shown, amber when it dips." },
 ];
 
@@ -22,14 +22,16 @@ export default function HowItWorksPage() {
       <section className="mx-auto max-w-3xl px-4 py-12">
         <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "var(--verified-bg)", color: "var(--verified-text)" }}>
           <span className="inline-block w-2 h-2 rounded-full animate-livePulse" style={{ background: "var(--verified)" }} />
-          <Activity className="w-3.5 h-3.5 animate-heartbeat" strokeWidth={2.75} /> The heartbeat behind every code
+          <Activity className="w-3.5 h-3.5 animate-heartbeat" strokeWidth={2.75} /> How we verify codes
         </span>
         <h1 className="font-display font-bold text-3xl sm:text-4xl mt-4" style={{ color: "var(--text)" }}>
-          Every code is tested before you see it.
+          You always know if a code was tested.
         </h1>
         <p className="text-lg text-muted mt-3">
-          Most coupon sites scrape codes and republish them — stale, expired, useless at checkout.
-          We do the opposite: a code only appears here if it actually worked, recently.
+          Most coupon sites republish scraped codes with no idea if they work. We&apos;re different:
+          codes we&apos;ve run through a real checkout carry a green <strong style={{ color: "var(--verified-text)" }}>✓ Verified</strong> badge
+          with the time and method; the rest are the latest from our sources, clearly marked
+          &ldquo;Not verified yet&rdquo; so you always know what you&apos;re trying.
         </p>
 
         <ol className="mt-10 space-y-6">

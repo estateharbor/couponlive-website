@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/deals/`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE}/free-trials/`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/how-it-works/`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
-    { url: `${SITE}/search/`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    // /search is intentionally excluded (noindex — internal search results).
   ];
 
   const storeSlugs = new Set(allStoreSlugs());

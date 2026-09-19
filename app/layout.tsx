@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s · CouponLive",
   },
   description:
-    "Live-verified coupon codes for India's top stores. Every code is tested working before you see it — no more expired codes at checkout.",
+    "Real coupon codes for India's top stores, refreshed hourly. Codes we've checkout-tested carry a ✓ Verified badge — see exactly when, where and how each was tested.",
   applicationName: "CouponLive",
   alternates: { canonical: "/" },
   manifest: "/site.webmanifest",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "CouponLive",
     title: "CouponLive — Coupon codes that actually work",
     description:
-      "Live-verified coupon codes for India's top stores. Every code tested working — no more expired codes at checkout.",
+      "Real coupon codes for India's top stores, refreshed hourly. The ones we've checkout-tested carry a ✓ Verified badge.",
     url: SITE,
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
