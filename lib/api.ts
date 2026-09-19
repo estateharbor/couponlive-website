@@ -94,6 +94,43 @@ export async function getTool(slug: string): Promise<Tool | null> {
   }
 }
 
+// --- Cancel reminders (T4) ---
+export interface ReminderInput {
+  email: string;
+  tool_name: string;
+  offer_id?: number;
+  ends_on: string; // YYYY-MM-DD
+  renew_price_inr?: number | null;
+  renew_note?: string | null;
+  consent: boolean;
+}
+
+export interface ReminderResult {
+  token: string;
+  tool_name: string;
+  ends_on: string;
+  status: string;
+  remind_days_before: number[];
+  manage_url?: string | null;
+}
+
+export async function createReminder(input: ReminderInput): Promise<ReminderResult> {
+  if (USING_MOCK) {
+    return { token: "mock", tool_name: input.tool_name, ends_on: input.ends_on,
+             status: "active", remind_days_before: [3, 1] };
+  }
+  const res = await fetch(`${API}/reminders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail?.detail || `reminder failed: ${res.status}`);
+  }
+  return (await res.json()) as ReminderResult;
+}
+
 export interface FeedbackResult {
   coupon_id: number;
   recorded: boolean;

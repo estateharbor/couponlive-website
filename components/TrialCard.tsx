@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, CreditCard, ShieldCheck, HelpCircle, CheckCircle2 } from "lucide-react";
 import type { TrialCard as TrialCardT } from "@/lib/types";
 import { MerchantTile } from "./MerchantTile";
+import { RemindModal } from "./RemindModal";
 
 const TYPE_LABEL: Record<string, string> = {
   no_card_trial: "No card",
@@ -47,6 +48,9 @@ function timeAgo(iso: string | null): string {
 
 export function TrialCard({ trial: c }: { trial: TrialCardT }) {
   const renew = renewLabel(c);
+  // Only offer a cancel-reminder where the trial can actually auto-charge.
+  const canAutoCharge =
+    c.card_required !== false && (!!c.trial_days || c.renew_price_inr != null || c.renew_price_usd != null);
 
   // Card-required chip (honest: null = Unknown).
   const card =
@@ -128,6 +132,11 @@ export function TrialCard({ trial: c }: { trial: TrialCardT }) {
           Claim trial
           <ArrowUpRight className="w-4 h-4 opacity-80" strokeWidth={2.5} />
         </a>
+        {canAutoCharge && (
+          <div className="mt-2 flex justify-center">
+            <RemindModal trial={c} />
+          </div>
+        )}
       </div>
     </article>
   );
