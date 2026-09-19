@@ -38,12 +38,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const store = await resolveStore(slug);
   if (!store) return {};
+  let usable = 0;
+  try {
+    usable = (await getCoupons({ listing: true, merchant: slug, limit: 100 })).length;
+  } catch {
+    /* API down at build — treat as unknown (don't noindex) */
+    usable = store.count;
+  }
   const title = `${store.name} coupon codes`;
   const description = `The latest ${store.name} coupon codes — refreshed hourly. Codes we've checkout-tested carry a Verified badge.`;
   return {
     title,
     description,
     alternates: { canonical: `/store/${slug}/` },
+    // Indexation quality gate: don't index a store page with no usable codes.
+    ...(usable === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title, description, url: `/store/${slug}/`, images: ["/og-image.png"] },
     twitter: { card: "summary_large_image", title, description, images: ["/og-image.png"] },
   };
@@ -93,7 +102,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
             </h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm">
               <span className="inline-flex items-center gap-1.5 font-semibold text-muted">
-                <Ticket className="w-4 h-4" style={{ color: "var(--brand-blue)" }} /> {store.count} codes
+                <Ticket className="w-4 h-4" style={{ color: "var(--brand-blue)" }} /> {coupons.length} {coupons.length === 1 ? "code" : "codes"}
               </span>
               {store.website && (
                 <a href={store.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted hover:text-[color:var(--brand-blue)]">
@@ -109,7 +118,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
       <section className="mx-auto max-w-6xl px-4 pt-6">
         <p className="text-muted max-w-3xl leading-relaxed">
           Find the latest <strong>{store.name} coupon codes and offers</strong>, refreshed hourly from our
-          sources. We currently list <strong>{store.count}</strong> {store.name} {store.count === 1 ? "code" : "codes"}
+          sources. We currently list <strong>{coupons.length}</strong> usable {store.name} {coupons.length === 1 ? "code" : "codes"}
           {verifiedCount > 0 && <> — <strong>{verifiedCount}</strong> checkout-tested and marked ✓&nbsp;Verified</>}.
           Tap “Reveal code” to copy a code, then paste it in the promo box at {store.name} checkout. Codes we
           haven’t tested yet are labelled “Not verified yet”, so you always know exactly what you’re trying.
