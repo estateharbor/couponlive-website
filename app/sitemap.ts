@@ -29,34 +29,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Only list store pages that actually have usable coupons — those are the
   // ones we let search engines index (0-usable store pages are noindex, so
-  // advertising them here is inconsistent). If the API is down at build, fall
-  // back to the mock slugs so the sitemap isn't empty.
-  let storeSlugs: string[];
+  // advertising them here is inconsistent). Use each merchant's real updated_at
+  // as lastmod (not a blanket build timestamp). If the API is down at build,
+  // fall back to the mock slugs so the sitemap isn't empty.
+  let storePages: MetadataRoute.Sitemap;
   try {
-    storeSlugs = (await getMerchants())
+    const seen = new Set<string>();
+    storePages = (await getMerchants())
       .filter((m) => (m.coupon_count ?? 0) > 0)
-      .map((m) => m.slug ?? m.normalized_name);
+      .map((m) => ({ slug: m.slug ?? m.normalized_name, updated: m.updated_at }))
+      .filter((m) => (seen.has(m.slug) ? false : (seen.add(m.slug), true)))
+      .map((m) => ({
+        url: `${SITE}/store/${m.slug}/`,
+        lastModified: m.updated ? new Date(m.updated) : now,
+        changeFrequency: "daily",
+        priority: 0.8,
+      }));
   } catch {
-    storeSlugs = allStoreSlugs();
+    storePages = allStoreSlugs().map((slug) => ({
+      url: `${SITE}/store/${slug}/`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    }));
   }
-  const storePages: MetadataRoute.Sitemap = [...new Set(storeSlugs)].map((slug) => ({
-    url: `${SITE}/store/${slug}/`,
-    lastModified: now,
-    changeFrequency: "daily",
-    priority: 0.8,
-  }));
 
   // Category pages are noindex today (thin nav taxonomy, not mapped to real
   // per-category inventory yet), so they're intentionally excluded here.
 
   // Tool pages for the Free Trials vertical (slugs from the live trials feed).
+  // lastmod = the tool's most recent verification, when known.
   const toolPages: MetadataRoute.Sitemap = [];
   try {
     const trials = await getTrials({ limit: 200 });
-    for (const slug of new Set(trials.map((t) => t.tool_slug))) {
+    const lastVerified = new Map<string, number>();
+    for (const t of trials) {
+      const ts = t.last_verified_at ? new Date(t.last_verified_at).getTime() : 0;
+      lastVerified.set(t.tool_slug, Math.max(lastVerified.get(t.tool_slug) ?? 0, ts));
+    }
+    for (const [slug, ts] of lastVerified) {
       toolPages.push({
         url: `${SITE}/tool/${slug}/`,
-        lastModified: now,
+        lastModified: ts > 0 ? new Date(ts) : now,
         changeFrequency: "daily",
         priority: 0.7,
       });

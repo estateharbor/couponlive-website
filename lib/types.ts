@@ -29,6 +29,8 @@ export interface Coupon {
   last_validated_at: string | null;
   expires_at?: string | null; // optional; shown only if known
   url?: string | null; // affiliate deeplink for the click-out (earns commission)
+  feedback_up?: number; // crowd votes that said "worked" (honest denominator)
+  feedback_total?: number; // total crowd votes on this code
 }
 
 // A code-less offer (e.g. an Amazon deal via Cuelinks). No code to copy and
@@ -145,4 +147,5 @@ export interface Merchant {
   website: string | null;
   coupon_count: number;
   valid_coupon_count: number;
+  updated_at?: string | null; // last change to this merchant row (sitemap lastmod)
 }

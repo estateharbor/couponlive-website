@@ -32,9 +32,13 @@ export function CouponGrid({
   // still refreshes them below for live freshness.
   initialCoupons?: Coupon[];
 }) {
+  const PAGE = 24;
   const [coupons, setCoupons] = useState<Coupon[] | null>(initialCoupons ?? null);
   const [sort, setSort] = useState<SortMode>(initialSort);
   const [verifiedOnly, setVerifiedOnly] = useState(verifiedOnlyDefault);
+  // Progressive reveal for long lists (deals/store/category, where no hard
+  // `limit` is passed). Reset whenever the filtered set changes.
+  const [shown, setShown] = useState(PAGE);
 
   useEffect(() => {
     let alive = true;
@@ -46,6 +50,7 @@ export function CouponGrid({
         ? all.filter((c) => categoryOf(c.merchant_slug) === categorySlug)
         : all;
       setCoupons(scoped);
+      setShown(PAGE);
     });
     return () => {
       alive = false;
@@ -59,6 +64,10 @@ export function CouponGrid({
     return limit ? list.slice(0, limit) : list;
   }, [coupons, sort, verifiedOnly, limit]);
 
+  // With a hard `limit` (e.g. homepage teaser) show it all; otherwise page it.
+  const paged = limit ? visible : visible.slice(0, shown);
+  const hasMore = !limit && visible.length > paged.length;
+
   if (coupons === null) return <CouponGridSkeleton count={limit ?? 6} />;
 
   return (
@@ -69,7 +78,7 @@ export function CouponGrid({
             <input
               type="checkbox"
               checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
+              onChange={(e) => { setVerifiedOnly(e.target.checked); setShown(PAGE); }}
               className="accent-[color:var(--verified)] w-4 h-4"
             />
             Verified only
@@ -78,7 +87,7 @@ export function CouponGrid({
             <span className="text-sm text-subtle">Sort</span>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value as SortMode)}
+              onChange={(e) => { setSort(e.target.value as SortMode); setShown(PAGE); }}
               className="surface border border-token rounded-lg text-sm px-2.5 py-1.5"
               aria-label="Sort coupons"
             >
@@ -105,12 +114,12 @@ export function CouponGrid({
               </span>
             </div>
             <div className="lg:max-w-md">
-              <CouponCard coupon={visible[0]} />
+              <CouponCard coupon={paged[0]} />
             </div>
           </div>
-          {visible.length > 1 && (
+          {paged.length > 1 && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {visible.slice(1).map((c) => (
+              {paged.slice(1).map((c) => (
                 <CouponCard key={c.id} coupon={c} />
               ))}
             </div>
@@ -118,9 +127,21 @@ export function CouponGrid({
         </>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((c) => (
+          {paged.map((c) => (
             <CouponCard key={c.id} coupon={c} />
           ))}
+        </div>
+      )}
+
+      {hasMore && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setShown((n) => n + PAGE)}
+            className="inline-flex items-center gap-2 rounded-lg border border-token surface px-5 py-2.5 text-sm font-semibold hover:shadow-md transition-shadow"
+            style={{ color: "var(--text)" }}
+          >
+            Show more ({visible.length - paged.length} more)
+          </button>
         </div>
       )}
     </div>

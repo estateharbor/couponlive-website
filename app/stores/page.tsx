@@ -5,6 +5,7 @@ import { MerchantTile } from "@/components/MerchantTile";
 import { CategoryChips } from "@/components/CategoryChips";
 import { getMerchants } from "@/lib/api";
 import { MOCK_MERCHANTS } from "@/lib/mock";
+import { displayMerchantName } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "All stores with coupon codes (India)",
@@ -35,17 +36,20 @@ export default async function StoresPage() {
         <div className="mt-5"><CategoryChips /></div>
 
         <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {merchants.map((m) => (
+          {merchants.map((m) => {
+            const name = displayMerchantName(m.name);
+            return (
             <Link key={m.id} href={`/store/${m.slug ?? m.normalized_name}/`} className="surface border border-token rounded-xl p-5 flex items-center gap-3 hover:shadow-md transition-shadow">
-              <MerchantTile name={m.name} size={44} />
+              <MerchantTile name={name} size={44} />
               <div className="min-w-0">
-                <p className="font-semibold truncate" style={{ color: "var(--text)" }}>{m.name}</p>
+                <p className="font-semibold truncate" style={{ color: "var(--text)" }}>{name}</p>
                 <p className="text-xs text-subtle">
                   {m.coupon_count} {m.coupon_count === 1 ? "code" : "codes"}
                 </p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
     </PageShell>

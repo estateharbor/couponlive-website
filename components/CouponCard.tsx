@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Copy, ThumbsDown, ThumbsUp, ArrowUpRight, Ticket } from "lucide-react";
 import type { Coupon } from "@/lib/types";
 import { getFreshness } from "@/lib/freshness";
-import { discountHeadline } from "@/lib/format";
+import { discountHeadline, displayMerchantName, couponConditions } from "@/lib/format";
 import { submitFeedback } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { MerchantTile } from "./MerchantTile";
@@ -36,11 +36,17 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
   const [copied, setCopied] = useState(false);
   const [vote, setVote] = useState<null | "up" | "down">(null);
   const [voting, setVoting] = useState(false);
+  // Local bump so the meter reflects the visitor's own counted vote immediately.
+  const [myVote, setMyVote] = useState<{ up: number; total: number }>({ up: 0, total: 0 });
 
   const freshness = getFreshness(coupon);
   const headline = discountHeadline(coupon);
+  const name = displayMerchantName(coupon.merchant_name);
   const expiry = expiryLabel(coupon.expires_at);
+  const conditions = couponConditions(coupon.description);
   const hasCode = !!coupon.code;
+  const votesUp = (coupon.feedback_up ?? 0) + myVote.up;
+  const votesTotal = (coupon.feedback_total ?? 0) + myVote.total;
 
   async function copy(text: string) {
     try {
@@ -67,7 +73,10 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
     setVote(worked ? "up" : "down"); // optimistic
     setVoting(true);
     try {
-      await submitFeedback(coupon.id, worked);
+      const res = await submitFeedback(coupon.id, worked);
+      // Only fold the vote into the visible denominator if the server counted it
+      // (one vote per IP per 24h) — never inflate the tally otherwise.
+      if (res.recorded) setMyVote((v) => ({ up: v.up + (worked ? 1 : 0), total: v.total + 1 }));
     } catch {
       /* keep the optimistic state; a retry queue is a later concern */
     } finally {
@@ -84,11 +93,11 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
     >
       {/* Header: merchant + freshness */}
       <div className="flex items-start gap-3">
-        <MerchantTile name={coupon.merchant_name} logo={coupon.merchant_logo} />
+        <MerchantTile name={name} logo={coupon.merchant_logo} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 justify-between">
             <p className="font-display font-semibold text-[15px] truncate" style={{ color: "var(--text)" }}>
-              {coupon.merchant_name}
+              {name}
             </p>
             <FreshnessBadge freshness={freshness} />
           </div>
@@ -103,17 +112,37 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
         <p className="text-sm text-muted mt-2 line-clamp-2">{coupon.description}</p>
       )}
 
-      {/* Confidence — only meaningful once a code has been verified or has
-          feedback; hide it for untested codes so we don't imply a "% worked". */}
-      {(coupon.status === "valid" || coupon.confidence_score > 0) && (
+      {/* Confidence — a real "N of M" denominator once there are crowd votes,
+          otherwise our model confidence. Hidden for untested, unvoted codes so
+          we never imply a "% worked" that no one reported. */}
+      {(votesTotal > 0 || coupon.status === "valid" || coupon.confidence_score > 0) && (
         <div className="mt-3">
-          <ConfidenceMeter score={coupon.confidence_score} />
+          <ConfidenceMeter score={coupon.confidence_score} up={votesUp} total={votesTotal} />
         </div>
       )}
 
-      {/* Expiry */}
-      {expiry && (
-        <p className="text-xs text-subtle mt-2">{expiry}</p>
+      {/* Offer conditions (only when stated in the offer text — never invented). */}
+      {(conditions.minOrder || conditions.newUsers || expiry) && (
+        <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+          {conditions.minOrder && (
+            <span className="inline-flex items-center rounded-full px-2 py-0.5"
+              style={{ background: "var(--surface-2, rgba(0,0,0,.05))", color: "var(--text-muted)" }}>
+              Min. order {conditions.minOrder}
+            </span>
+          )}
+          {conditions.newUsers && (
+            <span className="inline-flex items-center rounded-full px-2 py-0.5"
+              style={{ background: "var(--surface-2, rgba(0,0,0,.05))", color: "var(--text-muted)" }}>
+              New users only
+            </span>
+          )}
+          {expiry && (
+            <span className="inline-flex items-center rounded-full px-2 py-0.5"
+              style={{ background: "var(--surface-2, rgba(0,0,0,.05))", color: "var(--text-muted)" }}>
+              {expiry}
+            </span>
+          )}
+        </div>
       )}
 
       {/* Reveal / code */}
@@ -132,7 +161,7 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
                 "disabled:opacity-60 disabled:cursor-not-allowed",
               )}
               style={{ background: "var(--brand-blue)" }}
-              aria-label={hasCode ? `Reveal coupon code for ${coupon.merchant_name}` : "No code required"}
+              aria-label={hasCode ? `Reveal coupon code for ${name}` : "No code required"}
             >
               <Ticket className="w-4 h-4" strokeWidth={2.5} />
               {hasCode ? "Reveal code" : "No code needed — shop deal"}
@@ -195,7 +224,7 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
                   className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg py-2.5 font-semibold text-white text-sm"
                   style={{ background: "var(--verified)" }}
                 >
-                  {copied ? "Copied ✓ " : ""}Shop at {coupon.merchant_name}
+                  {copied ? "Copied ✓ " : ""}Shop at {name}
                   <ArrowUpRight className="w-4 h-4 opacity-90" strokeWidth={2.5} />
                 </a>
               )}
