@@ -112,10 +112,12 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
         <p className="text-sm text-muted mt-2 line-clamp-2">{coupon.description}</p>
       )}
 
-      {/* Confidence — a real "N of M" denominator once there are crowd votes,
-          otherwise our model confidence. Hidden for untested, unvoted codes so
-          we never imply a "% worked" that no one reported. */}
-      {(votesTotal > 0 || coupon.status === "valid" || coupon.confidence_score > 0) && (
+      {/* Confidence — show a real "N of M said it worked" denominator whenever
+          there are crowd votes. Otherwise show our model estimate ONLY for
+          not-yet-verified codes; a checkout-verified code already carries the
+          definitive green ✓ Verified badge, so an "estimate" beside it would
+          both contradict and undersell it. */}
+      {(votesTotal > 0 || (coupon.status !== "valid" && coupon.confidence_score > 0)) && (
         <div className="mt-3">
           <ConfidenceMeter score={coupon.confidence_score} up={votesUp} total={votesTotal} />
         </div>
