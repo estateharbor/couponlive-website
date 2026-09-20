@@ -16,7 +16,7 @@ export default function CategoriesPage() {
     <PageShell>
       <section className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="font-display font-bold text-3xl sm:text-4xl" style={{ color: "var(--text)" }}>Categories</h1>
-        <p className="text-muted mt-2">Verified codes grouped by what you&apos;re shopping for.</p>
+        <p className="text-muted mt-2">Browse coupon codes by what you&apos;re shopping for. Checkout-tested codes carry a ✓ Verified badge and appear first.</p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {CATEGORIES.map((c) => {
@@ -29,7 +29,7 @@ export default function CategoriesPage() {
                   <p className="text-sm text-muted">{c.blurb}</p>
                   <div className="flex items-center gap-1.5 mt-3">
                     {stores.slice(0, 5).map((s) => <MerchantTile key={s.id} name={s.name} size={26} />)}
-                    <span className="text-xs text-subtle ml-1">{count} codes</span>
+                    <span className="text-xs text-subtle ml-1">{count} {count === 1 ? "code" : "codes"}</span>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 shrink-0" style={{ color: "var(--brand-blue)" }} />

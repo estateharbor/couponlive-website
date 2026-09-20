@@ -16,14 +16,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const cat = getCategoryBySlug(slug);
   if (!cat) return {};
-  const title = `${cat.name} coupons — verified working codes`;
-  const description = `Live-verified ${cat.name.toLowerCase()} coupon codes across India's top stores. ${cat.blurb}. Only codes tested working.`;
+  const title = `${cat.name} coupon codes (India)`;
+  const description = `${cat.name} coupon codes across India's top stores, refreshed hourly. ${cat.blurb}. Codes we've checkout-tested carry a ✓ Verified badge.`;
   return {
     title,
     description,
     alternates: { canonical: `/category/${slug}/` },
+    // Categories are a lightweight nav taxonomy today (not yet mapped to every
+    // live merchant), so keep them out of the index until they carry real,
+    // unique inventory + guidance. They stay crawlable via internal links.
+    robots: { index: false, follow: true },
     openGraph: { title, description, url: `/category/${slug}/`, images: ["/og-image.png"] },
-    twitter: { card: "summary_large_image", title, description, images: ["/og-image.png"] },
   };
 }
 
@@ -42,7 +45,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             <Link href="/categories/" className="hover:underline">Categories</Link>
           </nav>
           <h1 className="font-display font-bold text-3xl" style={{ color: "var(--text)" }}>{cat.name} coupons</h1>
-          <p className="text-muted mt-1">{cat.blurb} — only codes verified working.</p>
+          <p className="text-muted mt-1">{cat.blurb}. Verified codes appear first; the rest are marked &ldquo;Not verified yet.&rdquo;</p>
           <div className="mt-4"><CategoryChips active={slug} /></div>
           {stores.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 mt-4">

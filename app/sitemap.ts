@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getMerchants, getTrials, getTrialCategories } from "@/lib/api";
-import { allCategorySlugs, allStoreSlugs } from "@/lib/catalog";
+import { allStoreSlugs } from "@/lib/catalog";
 import { SITE } from "@/lib/seo";
 
 // Generated to /sitemap.xml at build. Includes the static pages plus every
@@ -27,25 +27,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // /search is intentionally excluded (noindex — internal search results).
   ];
 
-  const storeSlugs = new Set(allStoreSlugs());
+  // Only list store pages that actually have usable coupons — those are the
+  // ones we let search engines index (0-usable store pages are noindex, so
+  // advertising them here is inconsistent). If the API is down at build, fall
+  // back to the mock slugs so the sitemap isn't empty.
+  let storeSlugs: string[];
   try {
-    for (const m of await getMerchants()) storeSlugs.add(m.slug ?? m.normalized_name);
+    storeSlugs = (await getMerchants())
+      .filter((m) => (m.coupon_count ?? 0) > 0)
+      .map((m) => m.slug ?? m.normalized_name);
   } catch {
-    /* API unreachable at build — mock slugs still ship */
+    storeSlugs = allStoreSlugs();
   }
-  const storePages: MetadataRoute.Sitemap = [...storeSlugs].map((slug) => ({
+  const storePages: MetadataRoute.Sitemap = [...new Set(storeSlugs)].map((slug) => ({
     url: `${SITE}/store/${slug}/`,
     lastModified: now,
     changeFrequency: "daily",
     priority: 0.8,
   }));
 
-  const categoryPages: MetadataRoute.Sitemap = allCategorySlugs().map((slug) => ({
-    url: `${SITE}/category/${slug}/`,
-    lastModified: now,
-    changeFrequency: "weekly",
-    priority: 0.6,
-  }));
+  // Category pages are noindex today (thin nav taxonomy, not mapped to real
+  // per-category inventory yet), so they're intentionally excluded here.
 
   // Tool pages for the Free Trials vertical (slugs from the live trials feed).
   const toolPages: MetadataRoute.Sitemap = [];
@@ -77,5 +79,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...storePages, ...categoryPages, ...toolPages, ...hubPages];
+  return [...staticPages, ...storePages, ...toolPages, ...hubPages];
 }

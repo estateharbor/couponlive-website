@@ -167,6 +167,26 @@ export function trialFaq(toolName: string): { q: string; a: string }[] {
   ];
 }
 
+// Generic FAQ for the free-trials hub + category hub pages, which cover many
+// tools at once. Uses a grammatical plural subject ("Do these tools…") — the
+// per-tool trialFaq(toolName) would read "Does these tools…" on those pages.
+export function hubTrialFaq(): { q: string; a: string }[] {
+  return [
+    {
+      q: `Do these tools have free trials in India?`,
+      a: `We list each tool's current free-trial and free-plan options for India, including whether a card is required, the trial length, and the price after it ends. Facts we can't confirm are shown as "Unknown" rather than guessed.`,
+    },
+    {
+      q: `Do these trials need a credit card?`,
+      a: `Each offer card shows a "No card needed" or "Card / UPI needed" chip. When we haven't confirmed it, it shows "Card: unknown" — we never assume.`,
+    },
+    {
+      q: `Will I be charged after a free trial ends?`,
+      a: `Where known, we show the exact renewal price in ₹ so there are no surprises. Always cancel before the trial ends if you don't want to be charged.`,
+    },
+  ];
+}
+
 // Reusable FAQ copy for store pages (rendered visibly AND as FAQPage JSON-LD).
 export function storeFaq(storeName: string): { q: string; a: string }[] {
   return [

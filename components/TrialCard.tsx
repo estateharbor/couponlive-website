@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, CreditCard, ShieldCheck, HelpCircle, CheckCircle2 } from "lucide-react";
 import type { TrialCard as TrialCardT } from "@/lib/types";
-import { ctaLabel, offerTypeLabel } from "@/lib/trials";
+import { ctaLabel, isPlansOnly, offerTypeLabel } from "@/lib/trials";
 import { MerchantTile } from "./MerchantTile";
 import { RemindModal } from "./RemindModal";
 
@@ -15,6 +15,8 @@ function trialHeadline(c: TrialCardT): string {
   }
   if (c.offer_type === "lifetime_free_tier") return "Free forever plan";
   if (c.offer_type === "freemium_premium_trial") return "Free plan + premium trial";
+  // No confirmed trial window and card-gated → don't claim a "free trial".
+  if (isPlansOnly(c)) return "Current plans";
   return "Free trial";
 }
 
@@ -36,9 +38,10 @@ function timeAgo(iso: string | null): string {
 export function TrialCard({ trial: c, alsoTypes = [] }: { trial: TrialCardT; alsoTypes?: string[] }) {
   const renew = renewLabel(c);
   const cta = ctaLabel(c);
-  // Only offer a cancel-reminder where the trial can actually auto-charge.
-  const canAutoCharge =
-    c.card_required !== false && (!!c.trial_days || c.renew_price_inr != null || c.renew_price_usd != null);
+  const plansOnly = isPlansOnly(c);
+  // Only offer a cancel-reminder where there's a real trial window that ends and
+  // can auto-charge. A plans-only card (no trial_days) has no "trial end" date.
+  const canAutoCharge = c.card_required !== false && !!c.trial_days && !plansOnly;
 
   // Card-required chip (honest: null = Unknown).
   const card =
@@ -95,9 +98,21 @@ export function TrialCard({ trial: c, alsoTypes = [] }: { trial: TrialCardT; als
 
       {renew && <p className="text-xs text-subtle mt-2">{renew}</p>}
 
-      {/* Verification badge — honest ladder */}
+      {/* Verification badge — honest ladder. A plans-only card never gets the
+          green "Verified" (that means a checkout-tested trial); at most we say
+          the plan details were checked. */}
       <div className="mt-2 text-xs">
-        {c.verification_status === "verified" ? (
+        {plansOnly ? (
+          c.verification_status === "verified" || c.verification_status === "likely_active" ? (
+            <span className="inline-flex items-center gap-1 text-subtle">
+              <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.5} /> Plan details checked {timeAgo(c.last_verified_at)}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-subtle">
+              <HelpCircle className="w-3.5 h-3.5" strokeWidth={2.5} /> No free trial confirmed
+            </span>
+          )
+        ) : c.verification_status === "verified" ? (
           <span className="inline-flex items-center gap-1 font-semibold" style={{ color: "var(--verified-text)" }}>
             <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
             Verified{c.last_verified_from === "IN" ? " 🇮🇳" : ""} {timeAgo(c.last_verified_at)}

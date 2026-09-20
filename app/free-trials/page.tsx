@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Byline } from "@/components/Byline";
 import { VERIFY_TEAM, reviewedToday } from "@/lib/editorial";
 import { getTrials, getTrialCategories } from "@/lib/api";
-import { SITE, breadcrumbLd, faqLd, trialFaq, trialsItemListLd } from "@/lib/seo";
+import { SITE, breadcrumbLd, faqLd, hubTrialFaq, trialsItemListLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Free Trials — verified, no-card options for India",
@@ -27,7 +27,7 @@ export default async function FreeTrialsPage() {
     getTrials({ limit: 120, sort: "recommended" }),
     getTrialCategories(),
   ]);
-  const faqs = trialFaq("these tools");
+  const faqs = hubTrialFaq();
 
   return (
     <PageShell>

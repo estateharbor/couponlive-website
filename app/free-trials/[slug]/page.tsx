@@ -5,7 +5,7 @@ import { TrialCard } from "@/components/TrialCard";
 import { JsonLd } from "@/components/JsonLd";
 import { getTrials, getTrialCategories } from "@/lib/api";
 import type { TrialCard as TrialCardT } from "@/lib/types";
-import { SITE, breadcrumbLd, faqLd, trialFaq, trialsItemListLd } from "@/lib/seo";
+import { SITE, breadcrumbLd, faqLd, hubTrialFaq, trialsItemListLd } from "@/lib/seo";
 import { groupByTool } from "@/lib/trials";
 
 export const dynamicParams = false;
@@ -103,7 +103,7 @@ export default async function TrialHubPage({ params }: { params: Promise<{ slug:
       </PageShell>
     );
   }
-  const faqs = trialFaq("these tools");
+  const faqs = hubTrialFaq();
 
   return (
     <PageShell>

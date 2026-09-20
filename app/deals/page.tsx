@@ -5,8 +5,8 @@ import { CouponGrid } from "@/components/CouponGrid";
 import { CategoryChips } from "@/components/CategoryChips";
 
 export const metadata: Metadata = {
-  title: "Deals feed — freshest verified codes",
-  description: "A live feed of the freshest verified coupon codes across India's top stores, sorted by what's working right now.",
+  title: "Latest coupon codes & deals (India) — verified first",
+  description: "The latest coupon codes and deals across India's top stores, refreshed hourly. Codes we've checkout-tested carry a ✓ Verified badge and appear first.",
   alternates: { canonical: "/deals/" },
 };
 
@@ -20,11 +20,12 @@ export default function DealsPage() {
           Freshest first
         </span>
         <h1 className="font-display font-bold text-3xl sm:text-4xl mt-3" style={{ color: "var(--text)" }}>
-          Deals feed
+          Latest coupon codes &amp; deals
         </h1>
         <p className="text-muted mt-2 max-w-2xl">
-          Every code here was tested at a real checkout recently. Sorted so the freshest, most-confident
-          codes surface first — never stale ones.
+          The freshest codes from our sources across India&apos;s top stores. The ones we&apos;ve
+          checkout-tested carry a green <span className="font-semibold" style={{ color: "var(--verified-text)" }}>✓ Verified</span> badge
+          and appear first; the rest are the latest available, marked &ldquo;Not verified yet.&rdquo;
         </p>
 
         <div className="mt-6 mb-6">
