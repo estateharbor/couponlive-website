@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, Tag } from "lucide-react";
 import type { Deal } from "@/lib/types";
 import { getDeals } from "@/lib/api";
-import { discountHeadline } from "@/lib/format";
+import { discountHeadline, displayMerchantName } from "@/lib/format";
 import { MerchantTile } from "./MerchantTile";
 
 // Top Deals: the freshest code-less offers across all merchants (sourced from
@@ -61,16 +61,17 @@ export function TopDeals({ limit = 6, initialDeals }: { limit?: number; initialD
 
 function DealCard({ deal }: { deal: Deal }) {
   const headline = discountHeadline(deal);
+  const name = displayMerchantName(deal.merchant_name) || "Store";
   const href = deal.url ?? "#";
 
   return (
     <article className="surface border border-token rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col p-4 sm:p-5">
       <div className="flex items-start gap-3">
-        <MerchantTile name={deal.merchant_name ?? "Store"} />
+        <MerchantTile name={name} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 justify-between">
             <p className="font-display font-semibold text-[15px] truncate" style={{ color: "var(--text)" }}>
-              {deal.merchant_name ?? "Store"}
+              {name}
             </p>
             {/* Neutral "Deal" tag — deliberately NOT a green ✓ Verified badge. */}
             <span
@@ -97,7 +98,7 @@ function DealCard({ deal }: { deal: Deal }) {
           rel="nofollow sponsored noopener noreferrer"
           className="w-full inline-flex items-center justify-center gap-2 rounded-lg py-3 px-4 font-semibold text-white text-[15px] transition-colors"
           style={{ background: "var(--brand-blue)" }}
-          aria-label={`Open this ${deal.merchant_name ?? "store"} deal`}
+          aria-label={`Open this ${name} deal`}
         >
           Grab deal
           <ArrowUpRight className="w-4 h-4 opacity-80" strokeWidth={2.5} />

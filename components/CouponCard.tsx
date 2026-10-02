@@ -19,6 +19,14 @@ const STORE_URLS: Record<string, string> = {
   ajio: "https://www.ajio.com",
   nykaa: "https://www.nykaa.com",
   boat: "https://www.boat-lifestyle.com",
+  dominos: "https://www.dominos.co.in",
+  swiggy: "https://www.swiggy.com",
+  zomato: "https://www.zomato.com",
+  makemytrip: "https://www.makemytrip.com",
+  cleartrip: "https://www.cleartrip.com",
+  redbus: "https://www.redbus.in",
+  uber: "https://www.uber.com/in/en/",
+  ola: "https://www.olacabs.com",
 };
 
 function expiryLabel(iso?: string | null): string | null {
