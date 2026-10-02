@@ -4,11 +4,12 @@ import Link from "next/link";
 import { ExternalLink, Ticket } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { CouponGrid } from "@/components/CouponGrid";
+import { StoreDeals } from "@/components/StoreDeals";
 import { MerchantTile } from "@/components/MerchantTile";
 import { JsonLd } from "@/components/JsonLd";
 import { Byline } from "@/components/Byline";
 import { VERIFY_TEAM, reviewedToday } from "@/lib/editorial";
-import { getCoupons, getMerchants } from "@/lib/api";
+import { getCoupons, getDeals, getMerchants } from "@/lib/api";
 import { allStoreSlugs, getStoreBySlug } from "@/lib/catalog";
 import { SITE, breadcrumbLd, couponsItemListLd, faqLd, storeFaq } from "@/lib/seo";
 
@@ -41,8 +42,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const store = await resolveStore(slug);
   if (!store) return {};
   let usable = 0;
+  let dealCount = 0;
   try {
     usable = (await getCoupons({ listing: true, merchant: slug, limit: 100 })).length;
+    dealCount = (await getDeals({ merchant: slug, limit: 50 })).length;
   } catch {
     /* API down at build — treat as unknown (don't noindex) */
     usable = store.count;
@@ -53,8 +56,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description,
     alternates: { canonical: `/store/${slug}/` },
-    // Indexation quality gate: don't index a store page with no usable codes.
-    ...(usable === 0 ? { robots: { index: false, follow: true } } : {}),
+    // Indexation quality gate: don't index a store page with no content at all
+    // (no usable codes AND no deals).
+    ...(usable === 0 && dealCount === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title, description, url: `/store/${slug}/`, images: ["/og-image.png"] },
     twitter: { card: "summary_large_image", title, description, images: ["/og-image.png"] },
   };
@@ -68,8 +72,10 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   // Fetch this store's coupons at BUILD time so they're in the static HTML
   // (crawlable by search + AI). The grid still refreshes them client-side.
   let coupons: Awaited<ReturnType<typeof getCoupons>> = [];
+  let deals: Awaited<ReturnType<typeof getDeals>> = [];
   try {
     coupons = await getCoupons({ listing: true, merchant: slug, limit: 100 });
+    deals = await getDeals({ merchant: slug, limit: 50 });
   } catch {
     /* API unreachable at build — page still ships, grid loads client-side */
   }
@@ -105,6 +111,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm">
               <span className="inline-flex items-center gap-1.5 font-semibold text-muted">
                 <Ticket className="w-4 h-4" style={{ color: "var(--brand-blue)" }} /> {coupons.length} {coupons.length === 1 ? "code" : "codes"}
+                {deals.length > 0 && <> · {deals.length} {deals.length === 1 ? "deal" : "deals"}</>}
               </span>
               {store.website && (
                 <a href={store.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted hover:text-[color:var(--brand-blue)]">
@@ -121,18 +128,34 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
       {/* Intro copy — real text for search + AI engines to read and summarise. */}
       <section className="mx-auto max-w-6xl px-4 pt-6">
-        <p className="text-muted max-w-3xl leading-relaxed">
-          Find the latest <strong>{store.name} coupon codes and offers</strong>, refreshed hourly from our
-          sources. We currently list <strong>{coupons.length}</strong> usable {store.name} {coupons.length === 1 ? "code" : "codes"}
-          {verifiedCount > 0 && <> — <strong>{verifiedCount}</strong> checkout-tested and marked ✓&nbsp;Verified</>}.
-          Tap “Reveal code” to copy a code, then paste it in the promo box at {store.name} checkout. Codes we
-          haven’t tested yet are labelled “Not verified yet”, so you always know exactly what you’re trying.
-        </p>
+        {coupons.length === 0 && deals.length > 0 ? (
+          <p className="text-muted max-w-3xl leading-relaxed">
+            Find the latest <strong>{store.name} offers and deals</strong>, refreshed from our sources. We
+            currently track <strong>{deals.length}</strong> live {store.name} {deals.length === 1 ? "deal" : "deals"} —
+            these have no coupon code to copy; tap “Grab deal” to open {store.name}. We’ll add
+            checkout-tested ✓&nbsp;Verified codes here as they’re confirmed.
+          </p>
+        ) : (
+          <p className="text-muted max-w-3xl leading-relaxed">
+            Find the latest <strong>{store.name} coupon codes and offers</strong>, refreshed hourly from our
+            sources. We currently list <strong>{coupons.length}</strong> usable {store.name} {coupons.length === 1 ? "code" : "codes"}
+            {verifiedCount > 0 && <> — <strong>{verifiedCount}</strong> checkout-tested and marked ✓&nbsp;Verified</>}.
+            Tap “Reveal code” to copy a code, then paste it in the promo box at {store.name} checkout. Codes we
+            haven’t tested yet are labelled “Not verified yet”, so you always know exactly what you’re trying.
+          </p>
+        )}
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-8">
-        <CouponGrid merchantSlug={slug} highlightBest initialCoupons={coupons} />
-      </section>
+      {/* Show the codes grid unless this is a deals-only store (no codes but has
+          deals) — that avoids the empty "No codes here right now" shell on a
+          store like Amazon.in that we fill with code-less deals instead. */}
+      {!(coupons.length === 0 && deals.length > 0) && (
+        <section className="mx-auto max-w-6xl px-4 py-8">
+          <CouponGrid merchantSlug={slug} highlightBest initialCoupons={coupons} />
+        </section>
+      )}
+
+      <StoreDeals merchantSlug={slug} storeName={store.name} initialDeals={deals} />
 
       {/* FAQ — visible text + FAQPage structured data above. */}
       <section className="mx-auto max-w-6xl px-4 pb-12">
